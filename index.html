@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel</title>
+  </head>
+  <body>
+    <iframe src="https://script.google.com/macros/s/AKfycby71sY0VSBNEv9U-_K080xY1OitQZZ8OwNwh3OREqCC65ETAgSQC5zodJ5f0WVHzYAD/exec"
+      width="100%"
+      height="100%"
+      allowfullscreen="true"
+      style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
+    <script>
+      window.onload = function() {
+        const iframe = document.querySelector('iframe');
+        if (iframe && typeof iframe.requestFullscreen === 'function') {
+          iframe.requestFullscreen().catch((err) => {
+            console.log(`Note: Full-screen requires a user interaction gesture: ${err.message}`);
+          });
+        }
+      };
+    </script>
+  </body>
+</html>
