@@ -1,25 +1,160 @@
 <!DOCTYPE html>
-<html>
-  <head>
+<html lang="id">
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitoring CSA Jambi</title>
-  </head>
-  <body>
-    <iframe src="https://script.google.com/macros/s/AKfycby71sY0VSBNEv9U-_K080xY1OitQZZ8OwNwh3OREqCC65ETAgSQC5zodJ5f0WVHzYAD/exec"
-      width="100%"
-      height="100%"
-      allowfullscreen="true"
-      style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none;"></iframe>
-    <script>
-      window.onload = function() {
-        const iframe = document.querySelector('iframe');
-        if (iframe && typeof iframe.requestFullscreen === 'function') {
-          iframe.requestFullscreen().catch((err) => {
-            console.log(`Note: Full-screen requires a user interaction gesture: ${err.message}`);
-          });
+    <title>Selesai Survei - Cybersecurity Awareness Jambi</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #0f172a;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
-      };
+
+        /* Ambient glowing background */
+        .loading-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, cubic-bezier(0.4, 0, 0.2, 1) translate;
+            color: #f8fafc;
+            text-align: center;
+        }
+
+        .spinner {
+            width: 56px;
+            height: 56px;
+            border: 4px solid rgba(255, 255, 255, 0.05);
+            border-left-color: #22d3ee;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.55, 0.15, 0.45, 0.85) infinite;
+            margin-bottom: 24px;
+            box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.025em;
+            color: #f1f5f9;
+        }
+
+        .loading-subtext {
+            font-size: 13px;
+            color: #94a3b8;
+            max-width: 280px;
+            line-height: 1.5;
+        }
+
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+            background: #0f172a;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+
+        iframe.loaded {
+            opacity: 1;
+        }
+
+        /* Decorative connection badge */
+        .conn-badge {
+            margin-top: 18px;
+            background: rgba(34, 211, 238, 0.1);
+            color: #22d3ee;
+            padding: 4px 10px;
+            border-radius: 99px;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border: 1px solid rgba(34, 211, 238, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Professional Loading Stage -->
+    <div class="loading-screen" id="loader">
+        <div class="spinner"></div>
+        <div class="loading-text" id="loader-status">Memverifikasi Sesi WiFi...</div>
+        <div class="loading-subtext" id="loader-substatus">Menghubungkan ke portal Google Apps Script basis data Pegawai CSA Jambi...</div>
+        <div class="conn-badge">SECURE GATEWAY</div>
+    </div>
+
+    <!-- Live Google Apps Script App Iframe -->
+    <iframe id="app-frame" src="about:blank" allowfullscreen="true"></iframe>
+
+    <script>
+        window.addEventListener('DOMContentLoaded', () => {
+            // 1. Ambil hash/parameter email atau user dari query string URL page ini
+            const urlParams = new URLSearchParams(window.location.search);
+            const emailParam = urlParams.get('email') || urlParams.get('user') || urlParams.get('username');
+            
+            // 2. URL Google Apps Script Web App Deployment Anda yang Terverifikasi
+            const baseWebappUrl = "https://script.google.com/macros/s/AKfycby71sY0VSBNEv9U-_K080xY1OitQZZ8OwNwh3OREqCC65ETAgSQC5zodJ5f0WVHzYAD/exec";
+            let targetUrl = baseWebappUrl;
+
+            // Jika email terdefinisi, teruskan dalam parameter 'user' ke Web App Google Apps Script
+            if (emailParam) {
+                const encodedEmail = encodeURIComponent(emailParam.trim());
+                targetUrl += '?user=' + encodedEmail;
+                
+                // Perbarui status visual untuk kepuasan pengguna
+                document.getElementById('loader-status').innerText = 'Memverifikasi ' + emailParam;
+                document.getElementById('loader-substatus').innerText = 'Mencari status kelulusan kuis Cybersecurity Awareness Anda...';
+            }
+
+            // 3. Muat iframe
+            const iframe = document.getElementById('app-frame');
+            iframe.src = targetUrl;
+
+            // 4. Deteksi load selesai untuk menghilangkan overlay lloading
+            iframe.onload = function() {
+                // Berikan jeda transisi halus 600ms demi estetika
+                setTimeout(() => {
+                    const loader = document.getElementById('loader');
+                    loader.style.opacity = '0';
+                    iframe.classList.add('loaded');
+                    
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                }, 600);
+            };
+
+            // Proteksi fallback jika load iframe lambat, paksa sembunyikan loading screen setelah 7 detik
+            setTimeout(() => {
+                const loader = document.getElementById('loader');
+                if (loader.style.display !== 'none') {
+                    loader.style.opacity = '0';
+                    iframe.classList.add('loaded');
+                    setTimeout(() => {
+                        loader.style.display = 'none';
+                    }, 500);
+                }
+            }, 7000);
+        });
     </script>
-  </body>
+</body>
 </html>
